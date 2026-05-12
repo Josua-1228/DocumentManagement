@@ -1,0 +1,172 @@
+/* Authentication Redirect Styles */
+.auth-redirect-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--document-bg) 0%, var(--folder-bg) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-redirect-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(139, 69, 19, 0.03) 2px,
+            rgba(139, 69, 19, 0.03) 4px
+        ),
+        repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 2px,
+            rgba(139, 69, 19, 0.03) 2px,
+            rgba(139, 69, 19, 0.03) 4px
+        );
+    pointer-events: none;
+    z-index: 1;
+}
+
+.auth-redirect-card {
+    background: var(--paper-texture);
+    border: 2px solid var(--binder-ring);
+    border-radius: 12px;
+    box-shadow: 
+        0 20px 40px var(--shadow-soft),
+        0 0 0 1px rgba(139, 69, 19, 0.1);
+    width: 100%;
+    max-width: 400px;
+    position: relative;
+    z-index: 2;
+    overflow: hidden;
+}
+
+.auth-redirect-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: repeating-linear-gradient(
+        90deg,
+        var(--ink-accent),
+        var(--ink-accent) 10px,
+        var(--stamp-red) 10px,
+        var(--stamp-red) 20px
+    );
+}
+
+.auth-redirect-content {
+    padding: 40px 30px;
+    text-align: center;
+}
+
+.redirect-icon {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 20px;
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.auth-redirect-content h2 {
+    color: var(--ink-primary);
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.auth-redirect-content p {
+    color: var(--ink-secondary);
+    font-size: 1rem;
+    margin-bottom: 30px;
+    line-height: 1.5;
+}
+
+.auth-redirect-btn {
+    background: linear-gradient(135deg, var(--ink-primary) 0%, var(--ink-secondary) 100%);
+    border: 2px solid var(--ink-primary);
+    color: white;
+    padding: 15px 30px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 12px var(--shadow-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    width: 100%;
+}
+
+.auth-redirect-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px var(--shadow-hard);
+    background: linear-gradient(135deg, var(--ink-secondary) 0%, var(--ink-primary) 100%);
+}
+
+.auth-redirect-btn .btn-icon {
+    font-size: 1.2rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .auth-redirect-container {
+        padding: 10px;
+    }
+    
+    .auth-redirect-card {
+        max-width: 100%;
+        margin: 0;
+    }
+    
+    .auth-redirect-content {
+        padding: 30px 20px;
+    }
+    
+    .redirect-icon {
+        font-size: 3rem;
+        margin-bottom: 15px;
+    }
+    
+    .auth-redirect-content h2 {
+        font-size: 1.5rem;
+    }
+    
+    .auth-redirect-btn {
+        padding: 12px 24px;
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-redirect-content {
+        padding: 25px 15px;
+    }
+    
+    .redirect-icon {
+        font-size: 2.5rem;
+        margin-bottom: 12px;
+    }
+    
+    .auth-redirect-content h2 {
+        font-size: 1.3rem;
+    }
+    
+    .auth-redirect-btn {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+}

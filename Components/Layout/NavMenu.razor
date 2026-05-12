@@ -1,0 +1,91 @@
+﻿@inject NavigationManager Navigation
+@inject AuthenticationStateManager AuthStateManager
+
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">
+            <span class="folder-icon">📁</span>
+            <span class="brand-text">DocumentManagement</span>
+        </a>
+    </div>
+</div>
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="nav flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> 
+                <span class="nav-text">Dashboard</span>
+                <span class="nav-icon">📊</span>
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="users">
+                <span class="bi bi-people-fill-nav-menu" aria-hidden="true"></span>
+                <span class="nav-text">Users</span>
+                <span class="nav-icon">👥</span>
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="documents">
+                <span class="bi bi-file-earmark-text-fill-nav-menu" aria-hidden="true"></span>
+                <span class="nav-text">Documents</span>
+                <span class="nav-icon">📄</span>
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="document-types">
+                <span class="bi bi-tags-fill-nav-menu" aria-hidden="true"></span>
+                <span class="nav-text">Document Types</span>
+                <span class="nav-icon">🏷️</span>
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="uploads">
+                <span class="bi bi-cloud-upload-fill-nav-menu" aria-hidden="true"></span>
+                <span class="nav-text">Uploads</span>
+                <span class="nav-icon">📤</span>
+            </NavLink>
+        </div>
+        
+        @if (AuthStateManager.IsAuthenticated)
+        {
+            <div class="nav-item px-3">
+                <button class="btn nav-link text-danger logout-btn" @onclick="Logout">
+                    <span class="bi bi-box-arrow-right-nav-menu" aria-hidden="true"></span>
+                    <span class="nav-text">Logout</span>
+                    <span class="nav-icon">🚪</span>
+                </button>
+            </div>
+        }
+        else
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="auth/login">
+                    <span class="bi bi-lock-fill-nav-menu" aria-hidden="true"></span>
+                    <span class="nav-text">Login</span>
+                    <span class="nav-icon">🔐</span>
+                </NavLink>
+            </div>
+        }
+    </nav>
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        AuthStateManager.AuthStateChanged += (_) => StateHasChanged();
+    }
+
+    private async Task Logout()
+    {
+        await AuthStateManager.LogoutAsync();
+    }
+}
+

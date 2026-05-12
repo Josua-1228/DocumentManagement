@@ -1,0 +1,115 @@
+@page "/login"
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Web
+@using global::DocumentManagement.Features.Services.Interfaces
+@rendermode InteractiveServer
+
+<PageTitle>Login</PageTitle>
+
+<div class="min-vh-100 d-flex align-items-center justify-content-center bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow-sm">
+                    <div class="card-body p-4">
+                        <h2 class="card-title text-center mb-4">Document Management System</h2>
+                        <h3 class="text-center mb-4">Sign In</h3>
+                        
+                        <EditForm Model="@loginRequest" OnValidSubmit="HandleLogin" class="needs-validation">
+                            <div class="form-group mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <InputText id="email" class="form-control" @bind-Value="loginRequest.Email" 
+                                         placeholder="Enter your email" required />
+                                <ValidationMessage For="@(() => loginRequest.Email)" class="text-danger" />
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <InputText type="password" id="password" class="form-control" 
+                                         @bind-Value="loginRequest.Password" 
+                                         placeholder="Enter your password" required />
+                                <ValidationMessage For="@(() => loginRequest.Password)" class="text-danger" />
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                <div class="form-check">
+                                    <InputCheckbox class="form-check-input" @bind-Value="loginRequest.RememberMe" />
+                                    <label class="form-check-label" for="rememberMe">Remember me</label>
+                                </div>
+                            </div>
+                            
+                            @if (!string.IsNullOrEmpty(errorMessage))
+                            {
+                                <div class="alert alert-danger" role="alert">
+                                    @errorMessage
+                                </div>
+                            }
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary w-100" disabled="@isSubmitting">
+                                    @if (isSubmitting)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                        <text>Signing in...</text>
+                                    }
+                                    else
+                                    {
+                                        <text>Sign In</text>
+                                    }
+                                </button>
+                            </div>
+                        </EditForm>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Inject]
+    private AuthenticationStateManager AuthStateManager { get; set; } = null!;
+    
+    [Inject]
+    private NavigationManager Navigation { get; set; } = null!;
+    
+    private LoginRequest loginRequest = new();
+    private bool isSubmitting = false;
+    private string? errorMessage;
+
+    [SupplyParameterFromQuery]
+    public string? ReturnUrl { get; set; }
+
+    private async Task HandleLogin()
+    {
+        if (isSubmitting)
+            return;
+
+        isSubmitting = true;
+        errorMessage = null;
+
+        try
+        {
+            var response = await AuthStateManager.LoginAsync(loginRequest);
+            
+            if (response.Success)
+            {
+                var returnUrl = !string.IsNullOrEmpty(ReturnUrl) ? "/" : ReturnUrl;
+                Navigation.NavigateTo(returnUrl);
+            }
+            else
+            {
+                errorMessage = response.ErrorMessage ?? "Login failed";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "An error occurred during login. Please try again.";
+            Console.WriteLine($"Login error: {ex.Message}");
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+}

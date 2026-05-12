@@ -1,0 +1,31 @@
+﻿@inherits LayoutComponentBase
+
+<link rel="stylesheet" href="css/document-theme.css" />
+
+<AuthenticatedRoute>
+    <div class="page">
+        <div class="sidebar">
+            <NavMenu />
+        </div>
+
+        <main>
+            <div class="top-row px-4">
+                <div class="document-header">
+                    <span class="document-title">📄 Document Management System</span>
+                    <span class="document-date">@DateTime.Now.ToString("MMMM dd, yyyy")</span>
+                </div>
+                <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+            </div>
+
+            <article class="content px-4">
+                @Body
+            </article>
+        </main>
+    </div>
+</AuthenticatedRoute>
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>

@@ -1,0 +1,181 @@
+@using global::DocumentManagement.Features.Data.Models
+@inject global::DocumentManagement.Features.Services.Interfaces.IUploadService UploadService
+@inject global::DocumentManagement.Features.Services.Interfaces.IDocumentService DocumentService
+@inject global::DocumentManagement.Features.Services.Interfaces.IUserService UserService
+
+<div class="modal fade show" style="display: block; background-color: rgba(0,0,0,0.5);" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Upload File</h5>
+                <button type="button" class="btn-close" @onclick="OnCancel"></button>
+            </div>
+            <div class="modal-body">
+                <EditForm Model="@Upload" OnValidSubmit="OnValidSubmit">
+                    <DataAnnotationsValidator />
+                    <div class="mb-3">
+                        <label class="form-label">Select File</label>
+                        <InputFile class="form-control" OnChange="OnFileSelected" />
+                        <ValidationMessage For="@(() => Upload.FileName)" />
+                        @if (selectedFile != null)
+                        {
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    Selected: @selectedFile.Name (@FormatFileSize(selectedFile.Size))
+                                </small>
+                            </div>
+                        }
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Document</label>
+                        <InputSelect class="form-select" @bind-Value="Upload.DocumentId">
+                            <option value="">Select a document...</option>
+                            @foreach (var doc in documents)
+                            {
+                                <option value="@doc.Id">@doc.Title</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => Upload.DocumentId)" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Uploaded By</label>
+                        <InputSelect class="form-select" @bind-Value="Upload.UserId">
+                            <option value="">Select a user...</option>
+                            @foreach (var user in users)
+                            {
+                                <option value="@user.Id">@user.FullName (@user.Email)</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => Upload.UserId)" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">File Path (Optional)</label>
+                        <InputText class="form-control" @bind-Value="Upload.FilePath" placeholder="Optional storage path" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <InputTextArea class="form-control" @bind-Value="Upload.Description" rows="3" />
+                    </div>
+                    <div class="mb-3">
+                        <div class="progress">
+                            <div class="progress-bar" role="progressbar" style="width: @uploadProgress%" 
+                                 aria-valuenow="@uploadProgress" aria-valuemin="0" aria-valuemax="100">
+                                @uploadProgress%
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="OnCancel">Cancel</button>
+                        <button type="submit" class="btn btn-primary" disabled="@IsSaving || selectedFile == null">
+                            @(IsSaving ? "Uploading..." : "Upload")
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public Upload? Upload { get; set; } = new Upload();
+
+    [Parameter]
+    public EventCallback<Upload> OnUploadSaved { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    private List<Document> documents = new();
+    private List<User> users = new();
+    private IBrowserFile? selectedFile;
+    private bool IsSaving = false;
+    private int uploadProgress = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDocuments();
+        await LoadUsers();
+    }
+
+    private async Task LoadDocuments()
+    {
+        try
+        {
+            documents = (await DocumentService.GetAllDocumentsAsync()).ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading documents: {ex.Message}");
+        }
+    }
+
+    private async Task LoadUsers()
+    {
+        try
+        {
+            users = (await UserService.GetAllUsersAsync()).ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading users: {ex.Message}");
+        }
+    }
+
+    private void OnFileSelected(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+        if (selectedFile != null)
+        {
+            Upload.FileName = selectedFile.Name;
+            Upload.FileSize = selectedFile.Size;
+            Upload.ContentType = selectedFile.ContentType;
+        }
+    }
+
+    private async Task OnValidSubmit()
+    {
+        if (selectedFile == null) return;
+
+        IsSaving = true;
+        uploadProgress = 0;
+
+        try
+        {
+            // Simulate upload progress
+            for (int i = 0; i <= 100; i += 10)
+            {
+                uploadProgress = i;
+                await Task.Delay(100);
+            }
+
+            // In a real application, you would handle the actual file upload here
+            // For now, just save the upload metadata
+            var savedUpload = await UploadService.UploadFileAsync(Upload);
+            
+            await OnUploadSaved.InvokeAsync(savedUpload);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error uploading file: {ex.Message}");
+        }
+        finally
+        {
+            IsSaving = false;
+            uploadProgress = 0;
+        }
+    }
+
+    private string FormatFileSize(long bytes)
+    {
+        string[] suffixes = { "B", "KB", "MB", "GB", "TB" };
+        int counter = 0;
+        decimal number = bytes;
+        while (Math.Round(number / 1024) >= 1)
+        {
+            number /= 1024;
+            counter++;
+        }
+        return $"{number:n1} {suffixes[counter]}";
+    }
+}

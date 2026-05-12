@@ -1,0 +1,154 @@
+@page "/document-types"
+@using global::DocumentManagement.Features.Data.Models
+@inject global::DocumentManagement.Features.Services.Interfaces.IDocumentTypeService DocumentTypeService
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Document Types</PageTitle>
+
+<AuthenticatedRoute>
+    <div class="container mt-5">
+        <div class="row mb-4">
+            <div class="col">
+                <h1>Document Types</h1>
+            </div>
+            <div class="col text-end">
+                <button class="btn btn-primary" @onclick="CreateDocumentType">
+                    <span class="oi oi-plus"></span> Add Type
+                </button>
+            </div>
+        </div>
+
+        @if (documentTypes == null)
+        {
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        }
+        else if (documentTypes.Count == 0)
+        {
+            <div class="alert alert-info" role="alert">
+                No document types found. <a href="#" @onclick="() => ShowCreateModal = true">Create one now</a>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Name</th>
+                            <th>File Extension</th>
+                            <th>Description</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var type in documentTypes)
+                        {
+                            <tr>
+                                <td><strong>@type.Name</strong></td>
+                                <td><code>@type.FileExtension</code></td>
+                                <td>@type.Description</td>
+                                <td>
+                                    @if (type.IsActive)
+                                    {
+                                        <span class="badge bg-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">Inactive</span>
+                                    }
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-warning" @onclick="() => EditType(type.Id)" title="Edit">
+                                        <span class="oi oi-pencil"></span>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" @onclick="() => ConfirmDelete(type.Id)" title="Delete">
+                                        <span class="oi oi-trash"></span>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</AuthenticatedRoute>
+
+@if (ShowCreateModal)
+{
+    <DocumentTypeForm DocumentType="@editingDocumentType" OnDocumentTypeSaved="OnDocumentTypeSaved" OnCancel="() => ShowCreateModal = false" />
+}
+
+@code {
+    private List<DocumentType>? documentTypes;
+    private bool ShowCreateModal = false;
+    private DocumentType editingDocumentType = new DocumentType();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDocumentTypes();
+    }
+
+    private async Task LoadDocumentTypes()
+    {
+        try
+        {
+            documentTypes = (await DocumentTypeService.GetAllDocumentTypesAsync()).ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading document types: {ex.Message}");
+        }
+    }
+
+    private void EditType(int typeId)
+    {
+        var documentType = documentTypes?.FirstOrDefault(dt => dt.Id == typeId);
+        if (documentType != null)
+        {
+            editingDocumentType = documentType;
+            ShowCreateModal = true;
+        }
+    }
+
+    private void CreateDocumentType()
+    {
+        editingDocumentType = new DocumentType();
+        ShowCreateModal = true;
+    }
+
+    private async Task OnDocumentTypeSaved(DocumentType savedDocumentType)
+    {
+        ShowCreateModal = false;
+        await LoadDocumentTypes();
+    }
+
+    private async Task ConfirmDelete(int typeId)
+    {
+        if (await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this document type?"))
+        {
+            await DeleteType(typeId);
+        }
+    }
+
+    private async Task DeleteType(int typeId)
+    {
+        try
+        {
+            if (await DocumentTypeService.DeleteDocumentTypeAsync(typeId))
+            {
+                await LoadDocumentTypes();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting document type: {ex.Message}");
+        }
+    }
+
+    @inject IJSRuntime JSRuntime
+}

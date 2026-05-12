@@ -1,0 +1,248 @@
+@page "/uploads"
+@using global::DocumentManagement.Features.Data.Models
+@inject global::DocumentManagement.Features.Services.Interfaces.IUploadService UploadService
+@inject global::DocumentManagement.Features.Services.Interfaces.IDocumentService DocumentService
+@inject global::DocumentManagement.Features.Services.Interfaces.IUserService UserService
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>File Uploads</PageTitle>
+
+<AuthenticatedRoute>
+
+<div class="container mt-5 upload-page">
+    <div class="upload-header">
+        <h1>📤 File Uploads</h1>
+        <button class="btn upload-btn" @onclick="CreateUpload">
+            <span class="oi oi-cloud-upload"></span> Upload File
+        </button>
+    </div>
+
+    <div class="upload-filters">
+        <div class="row">
+            <div class="col-md-4">
+                <label class="form-label">Filter by Document:</label>
+                <InputSelect class="form-select" @bind-Value="selectedDocumentId" @onchange="FilterUploads">
+                    <option value="0">All Documents</option>
+                    @foreach (var doc in documents)
+                    {
+                        <option value="@doc.Id">@doc.Title</option>
+                    }
+                </InputSelect>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Filter by User:</label>
+                <InputSelect class="form-select" @bind-Value="selectedUserId" @onchange="FilterUploads">
+                    <option value="0">All Users</option>
+                    @foreach (var user in users)
+                    {
+                        <option value="@user.Id">@user.FullName</option>
+                    }
+                </InputSelect>
+            </div>
+        </div>
+    </div>
+
+    @if (uploads == null)
+    {
+        <div class="upload-loading">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (uploads.Count == 0)
+    {
+        <div class="upload-empty-state">
+            <div class="alert alert-info" role="alert">
+                📭 No uploads found. <a href="#" @onclick="CreateUpload">Upload a file now</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="upload-table-container">
+            <div class="table-responsive">
+                <table class="table upload-table">
+                    <thead>
+                        <tr>
+                            <th>File Name</th>
+                            <th>Document</th>
+                            <th>Uploaded By</th>
+                            <th>File Size</th>
+                            <th>Upload Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var upload in uploads)
+                        {
+                            <tr>
+                                <td class="file-name">
+                                    <strong>@upload.FileName</strong>
+                                    @if (!string.IsNullOrEmpty(upload.FilePath))
+                                    {
+                                        <br />
+                                        <small class="text-muted">@upload.FilePath</small>
+                                    }
+                                </td>
+                                <td class="document-title">@upload.Document?.Title</td>
+                                <td class="user-name">@upload.User?.FullName</td>
+                                <td class="file-size">@FormatFileSize(upload.FileSize)</td>
+                                <td class="upload-date">@upload.UploadedAt.ToString("g")</td>
+                                <td class="actions">
+                                    <button class="btn btn-sm btn-info" @onclick="() => ViewUpload(upload.Id)" title="View">
+                                        <span class="oi oi-eye"></span>
+                                    </button>
+                                    <button class="btn btn-sm btn-success" @onclick="() => DownloadFile(upload.Id)" title="Download">
+                                        <span class="oi oi-data-transfer-download"></span>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" @onclick="() => ConfirmDelete(upload.Id)" title="Delete">
+                                        <span class="oi oi-trash"></span>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+</AuthenticatedRoute>
+
+@if (ShowCreateModal)
+{
+    <UploadForm Upload="@editingUpload" OnUploadSaved="OnUploadSaved" OnCancel="() => ShowCreateModal = false" />
+}
+
+@code {
+    private List<Upload>? uploads;
+    private List<Document>? documents = new();
+    private List<User>? users = new();
+    private bool ShowCreateModal = false;
+    private Upload editingUpload = new Upload();
+    private int selectedDocumentId = 0;
+    private int selectedUserId = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUploads();
+        await LoadDocuments();
+        await LoadUsers();
+    }
+
+    private async Task LoadUploads()
+    {
+        try
+        {
+            if (selectedDocumentId > 0)
+            {
+                uploads = (await UploadService.GetDocumentUploadsAsync(selectedDocumentId)).ToList();
+            }
+            else if (selectedUserId > 0)
+            {
+                uploads = (await UploadService.GetUserUploadsAsync(selectedUserId)).ToList();
+            }
+            else
+            {
+                // For now, get all uploads - you might need to add a GetAllUploadsAsync method
+                uploads = new List<Upload>(); // Placeholder
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading uploads: {ex.Message}");
+        }
+    }
+
+    private async Task LoadDocuments()
+    {
+        try
+        {
+            documents = (await DocumentService.GetAllDocumentsAsync()).ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading documents: {ex.Message}");
+        }
+    }
+
+    private async Task LoadUsers()
+    {
+        try
+        {
+            users = (await UserService.GetAllUsersAsync()).ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading users: {ex.Message}");
+        }
+    }
+
+    private void CreateUpload()
+    {
+        editingUpload = new Upload();
+        ShowCreateModal = true;
+    }
+
+    private async Task OnUploadSaved(Upload savedUpload)
+    {
+        ShowCreateModal = false;
+        await LoadUploads();
+    }
+
+    private async Task FilterUploads()
+    {
+        await LoadUploads();
+    }
+
+    private void ViewUpload(int uploadId)
+    {
+        Navigation.NavigateTo($"/upload/{uploadId}");
+    }
+
+    private void DownloadFile(int uploadId)
+    {
+        // Implement file download logic
+        Navigation.NavigateTo($"/download/{uploadId}");
+    }
+
+    private async Task ConfirmDelete(int uploadId)
+    {
+        if (await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this upload?"))
+        {
+            await DeleteUpload(uploadId);
+        }
+    }
+
+    private async Task DeleteUpload(int uploadId)
+    {
+        try
+        {
+            if (await UploadService.DeleteUploadAsync(uploadId))
+            {
+                await LoadUploads();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting upload: {ex.Message}");
+        }
+    }
+
+    private string FormatFileSize(long bytes)
+    {
+        string[] suffixes = { "B", "KB", "MB", "GB", "TB" };
+        int counter = 0;
+        decimal number = bytes;
+        while (Math.Round(number / 1024) >= 1)
+        {
+            number /= 1024;
+            counter++;
+        }
+        return $"{number:n1} {suffixes[counter]}";
+    }
+
+    @inject IJSRuntime JSRuntime
+}

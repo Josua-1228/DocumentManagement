@@ -1,0 +1,191 @@
+/* User Management Page Styles */
+
+/* Current User Row Highlighting */
+.current-user-row {
+    background: linear-gradient(135deg, rgba(39, 174, 96, 0.1) 0%, rgba(39, 174, 96, 0.05) 100%);
+    border-left: 4px solid #27ae60;
+    animation: highlight-current-user 2s ease-in-out;
+}
+
+@keyframes highlight-current-user {
+    0% { background-color: transparent; }
+    50% { background-color: rgba(39, 174, 96, 0.2); }
+    100% { background-color: rgba(39, 174, 96, 0.1); }
+}
+
+/* User Name Cell */
+.user-name-cell {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-name {
+    color: var(--ink-primary);
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.current-user-badge {
+    background: var(--highlight-yellow);
+    color: var(--ink-primary);
+    padding: 2px 6px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px var(--shadow-soft);
+    animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+/* Role Badge */
+.user-role {
+    background: linear-gradient(135deg, var(--ink-accent) 0%, var(--ink-secondary) 100%);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 16px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px var(--shadow-soft);
+}
+
+/* User Status */
+.user-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.status-active {
+    background: rgba(39, 174, 96, 0.2);
+    color: #27ae60;
+    border: 1px solid #27ae60;
+}
+
+.status-inactive {
+    background: rgba(192, 57, 43, 0.2);
+    color: var(--stamp-red);
+    border: 1px solid var(--stamp-red);
+}
+
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 4px;
+}
+
+.status-active .status-indicator {
+    background: #27ae60;
+    box-shadow: 0 0 6px rgba(39, 174, 96, 0.4);
+}
+
+.status-inactive .status-indicator {
+    background: var(--stamp-red);
+    box-shadow: 0 0 6px rgba(192, 57, 43, 0.4);
+}
+
+/* Table Enhancements */
+.table-responsive {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px var(--shadow-soft);
+}
+
+.table {
+    margin: 0;
+    background: var(--paper-texture);
+}
+
+.table thead th {
+    background: linear-gradient(180deg, var(--folder-bg) 0%, var(--folder-dark) 100%);
+    color: var(--ink-primary);
+    font-weight: 600;
+    border-bottom: 2px solid var(--ink-accent);
+    padding: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.table td {
+    padding: 12px;
+    vertical-align: middle;
+    border-bottom: 1px solid rgba(139, 69, 19, 0.1);
+    transition: all 0.3s ease;
+}
+
+.table tbody tr:hover {
+    background: rgba(243, 156, 18, 0.05);
+    transform: translateX(2px);
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .user-name-cell {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .current-user-badge {
+        font-size: 0.6rem;
+        padding: 1px 4px;
+    }
+    
+    .user-role {
+        font-size: 0.7rem;
+        padding: 2px 6px;
+    }
+    
+    .user-status {
+        font-size: 0.75rem;
+        padding: 2px 6px;
+    }
+    
+    .table thead th,
+    .table td {
+        padding: 8px;
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .current-user-badge {
+        font-size: 0.55rem;
+        padding: 1px 3px;
+    }
+    
+    .user-role {
+        font-size: 0.65rem;
+        padding: 1px 4px;
+    }
+    
+    .user-status {
+        font-size: 0.7rem;
+        padding: 1px 4px;
+    }
+    
+    .table thead th,
+    .table td {
+        padding: 6px;
+        font-size: 0.8rem;
+    }
+}

@@ -1,0 +1,182 @@
+@page "/auth/login"
+@using global::DocumentManagement.Features.Authentication.Models
+@inject AuthenticationStateManager AuthStateManager
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Login - Document Management</PageTitle>
+
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="auth-logo">
+                <span class="logo-icon">📁</span>
+                <h1>Document Management</h1>
+            </div>
+            <p class="auth-subtitle">Sign in to access your documents</p>
+            <div class="auth-stamp">AUTHENTICATED</div>
+        </div>
+
+        <div class="auth-body">
+            <EditForm Model="@loginRequest" OnValidSubmit="HandleLogin" class="auth-form">
+                <DataAnnotationsValidator />
+                
+                <div class="form-group">
+                    <label for="email" class="form-label">
+                        <span class="field-icon">📧</span>
+                        Email Address
+                    </label>
+                    <InputText id="email" class="form-control auth-input" @bind-Value="loginRequest.Email" 
+                             placeholder="Enter your email address" required />
+                    <ValidationMessage For="@(() => loginRequest.Email)" class="field-error" />
+                </div>
+                
+                <div class="form-group">
+                    <label for="password" class="form-label">
+                        <span class="field-icon">🔒</span>
+                        Password
+                    </label>
+                    <InputText type="password" id="password" class="form-control auth-input" 
+                             @bind-Value="loginRequest.Password" 
+                             placeholder="Enter your password" required />
+                    <ValidationMessage For="@(() => loginRequest.Password)" class="field-error" />
+                </div>
+                
+                <div class="form-group">
+                    <div class="form-check auth-check">
+                        <InputCheckbox class="form-check-input" @bind-Value="loginRequest.RememberMe" />
+                        <label class="form-check-label" for="rememberMe">
+                            <span class="check-icon">💾</span>
+                            Remember me on this device
+                        </label>
+                    </div>
+                </div>
+                
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="auth-error">
+                        <span class="error-icon">⚠️</span>
+                        <span>@errorMessage</span>
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(successMessage))
+                {
+                    <div class="auth-success">
+                        <span class="success-icon">✅</span>
+                        <span>@successMessage</span>
+                    </div>
+                }
+                
+                <button type="submit" class="auth-btn" disabled="@isSubmitting">
+                    @if (isSubmitting)
+                    {
+                        <span class="loading-spinner"></span>
+                        <span class="btn-text">Authenticating...</span>
+                    }
+                    else
+                    {
+                        <span class="btn-icon">🔐</span>
+                        <span class="btn-text">Sign In</span>
+                    }
+                </button>
+            </EditForm>
+            
+            <div class="auth-footer">
+                <p class="footer-text">
+                    Don't have an account? 
+                    <a href="/auth/register" class="footer-link">Register here</a>
+                </p>
+                <p class="footer-text">
+                    <a href="/auth/forgot-password" class="footer-link">Forgot your password?</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private LoginRequest loginRequest = new();
+    private bool isSubmitting = false;
+    private string? errorMessage;
+    private string? successMessage;
+
+    [SupplyParameterFromQuery]
+    public string? ReturnUrl { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Check if user is already authenticated
+        if (AuthStateManager.IsAuthenticated)
+        {
+            var returnUrl = !string.IsNullOrEmpty(ReturnUrl) ? ReturnUrl : "/";
+            Navigation.NavigateTo(returnUrl, forceLoad: true);
+        }
+    }
+
+    private async Task HandleLogin()
+    {
+        if (isSubmitting)
+            return;
+
+        isSubmitting = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            // Validate input
+            if (string.IsNullOrWhiteSpace(loginRequest.Email) || string.IsNullOrWhiteSpace(loginRequest.Password))
+            {
+                errorMessage = "Please enter both email and password.";
+                return;
+            }
+
+            // Validate email format
+            if (!IsValidEmail(loginRequest.Email))
+            {
+                errorMessage = "Please enter a valid email address.";
+                return;
+            }
+
+            var response = await AuthStateManager.LoginAsync(loginRequest);
+            
+            if (response.Success)
+            {
+                successMessage = "Login successful! Redirecting...";
+                
+                // Show success message briefly before redirect
+                await Task.Delay(1500);
+                
+                var returnUrl = !string.IsNullOrEmpty(ReturnUrl) ? ReturnUrl : "/";
+                Navigation.NavigateTo(returnUrl, forceLoad: true);
+            }
+            else
+            {
+                errorMessage = response.ErrorMessage ?? "Invalid email or password. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Login error: {ex.Message}");
+            errorMessage = "An unexpected error occurred during login. Please try again later.";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private bool IsValidEmail(string email)
+    {
+        try
+        {
+            var addr = new System.Net.Mail.MailAddress(email);
+            return addr.Address == email;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+}

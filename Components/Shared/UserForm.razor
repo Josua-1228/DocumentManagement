@@ -1,0 +1,87 @@
+@using global::DocumentManagement.Features.Data.Models
+@inject global::DocumentManagement.Features.Services.Interfaces.IUserService UserService
+@inject NavigationManager Navigation
+
+<div class="modal fade show" style="display: block; background-color: rgba(0,0,0,0.5);" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    @(User?.Id > 0 ? "Edit User" : "Create User")
+                </h5>
+                <button type="button" class="btn-close" @onclick="OnCancel"></button>
+            </div>
+            <div class="modal-body">
+                <EditForm Model="@User" OnValidSubmit="OnValidSubmit">
+                    <DataAnnotationsValidator />
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        <InputText class="form-control" @bind-Value="User.Username" />
+                        <ValidationMessage For="@(() => User.Username)" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <InputText class="form-control" @bind-Value="User.Email" />
+                        <ValidationMessage For="@(() => User.Email)" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Full Name</label>
+                        <InputText class="form-control" @bind-Value="User.FullName" />
+                        <ValidationMessage For="@(() => User.FullName)" />
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <InputCheckbox class="form-check-input" @bind-Value="User.IsActive" />
+                            <label class="form-check-label">Active</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="OnCancel">Cancel</button>
+                        <button type="submit" class="btn btn-primary" disabled="@IsSaving">
+                            @(IsSaving ? "Saving..." : "Save")
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public User? User { get; set; } = new User();
+
+    [Parameter]
+    public EventCallback<User> OnUserSaved { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    private bool IsSaving = false;
+
+    private async Task OnValidSubmit()
+    {
+        IsSaving = true;
+        try
+        {
+            if (User?.Id > 0)
+            {
+                await UserService.UpdateUserAsync(User);
+            }
+            else
+            {
+                await UserService.CreateUserAsync(User);
+            }
+
+            await OnUserSaved.InvokeAsync(User);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving user: {ex.Message}");
+        }
+        finally
+        {
+            IsSaving = false;
+        }
+    }
+}

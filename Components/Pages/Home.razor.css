@@ -1,0 +1,176 @@
+/* Dashboard User Information Styles */
+.user-info-card {
+    background: var(--paper-texture);
+    border: 2px solid var(--binder-ring);
+    border-radius: 12px;
+    box-shadow: 0 8px 16px var(--shadow-soft);
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.user-info-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: repeating-linear-gradient(
+        90deg,
+        var(--ink-accent),
+        var(--ink-accent) 10px,
+        var(--stamp-red) 10px,
+        var(--stamp-red) 20px
+    );
+}
+
+.user-info-header {
+    background: linear-gradient(135deg, var(--folder-bg) 0%, var(--folder-dark) 100%);
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(139, 69, 19, 0.2);
+}
+
+.user-info-header h3 {
+    color: var(--ink-primary);
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 600;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.user-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+.status-online {
+    background: #27ae60;
+    box-shadow: 0 0 8px rgba(39, 174, 96, 0.4);
+}
+
+.status-text {
+    color: var(--ink-secondary);
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.6; }
+    100% { opacity: 1; }
+}
+
+.user-info-body {
+    padding: 25px;
+}
+
+.info-item {
+    margin-bottom: 20px;
+}
+
+.info-label {
+    display: block;
+    color: var(--ink-secondary);
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-value {
+    color: var(--ink-primary);
+    font-size: 1.1rem;
+    font-weight: 500;
+    display: block;
+    word-wrap: break-word;
+    line-height: 1.4;
+}
+
+.role-badge {
+    background: linear-gradient(135deg, var(--highlight-yellow) 0%, #e67e22 100%);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px var(--shadow-soft);
+}
+
+/* Responsive Design for User Info */
+@media (max-width: 768px) {
+    .user-info-header {
+        padding: 15px;
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .user-info-header h3 {
+        font-size: 1.1rem;
+    }
+    
+    .user-info-body {
+        padding: 20px;
+    }
+    
+    .info-item {
+        margin-bottom: 15px;
+    }
+    
+    .info-label {
+        font-size: 0.85rem;
+        margin-bottom: 6px;
+    }
+    
+    .info-value {
+        font-size: 1rem;
+    }
+    
+    .role-badge {
+        font-size: 0.75rem;
+        padding: 3px 10px;
+    }
+}
+
+@media (max-width: 576px) {
+    .user-info-header {
+        padding: 12px;
+    }
+    
+    .user-info-body {
+        padding: 15px;
+    }
+    
+    .info-item {
+        margin-bottom: 12px;
+    }
+    
+    .info-label {
+        font-size: 0.8rem;
+        margin-bottom: 4px;
+    }
+    
+    .info-value {
+        font-size: 0.95rem;
+    }
+    
+    .role-badge {
+        font-size: 0.7rem;
+        padding: 2px 8px;
+    }
+}

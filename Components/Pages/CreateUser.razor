@@ -1,0 +1,149 @@
+@page "/users/create"
+@using global::DocumentManagement.Features.Data.Models
+@inject global::DocumentManagement.Features.Services.Interfaces.IUserService UserService
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Create User</PageTitle>
+
+<div class="container mt-5">
+    <div class="row mb-4">
+        <div class="col">
+            <h1>Create New User</h1>
+            <p class="text-muted">Add a new user to the document management system</p>
+        </div>
+        <div class="col text-end">
+            <a href="/users" class="btn btn-outline-secondary">
+                <span class="oi oi-arrow-left"></span> Back to Users
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <EditForm Model="@user" OnValidSubmit="HandleCreateUser">
+                        <DataAnnotationsValidator />
+                        
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username *</label>
+                            <InputText id="username" class="form-control" @bind-Value="user.Username" 
+                                     placeholder="Enter username" required />
+                            <ValidationMessage For="@(() => user.Username)" class="text-danger" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email *</label>
+                            <InputText id="email" class="form-control" @bind-Value="user.Email" 
+                                     placeholder="Enter email address" required />
+                            <ValidationMessage For="@(() => user.Email)" class="text-danger" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="fullname" class="form-label">Full Name *</label>
+                            <InputText id="fullname" class="form-control" @bind-Value="user.FullName" 
+                                     placeholder="Enter full name" required />
+                            <ValidationMessage For="@(() => user.FullName)" class="text-danger" />
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <InputCheckbox class="form-check-input" @bind-Value="user.IsActive" />
+                                <label class="form-check-label" for="isActive">
+                                    Active (user can login and access the system)
+                                </label>
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(errorMessage))
+                        {
+                            <div class="alert alert-danger" role="alert">
+                                @errorMessage
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(successMessage))
+                        {
+                            <div class="alert alert-success" role="alert">
+                                @successMessage
+                            </div>
+                        }
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary" disabled="@isCreating">
+                                @if (isCreating)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                    <text>Creating...</text>
+                                }
+                                else
+                                {
+                                    <text>Create User</text>
+                                }
+                            </button>
+                            <a href="/users" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">User Information</h6>
+                </div>
+                <div class="card-body">
+                    <p class="small text-muted">
+                        <strong>Username:</strong> Unique identifier for the user<br>
+                        <strong>Email:</strong> Used for login notifications<br>
+                        <strong>Full Name:</strong> Display name in the system<br>
+                        <strong>Active Status:</strong> Only active users can access the system
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private User user = new();
+    private bool isCreating = false;
+    private string? errorMessage;
+    private string? successMessage;
+
+    private async Task HandleCreateUser()
+    {
+        if (isCreating)
+            return;
+
+        isCreating = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            // Set default values
+            user.CreatedAt = DateTime.UtcNow;
+            user.IsActive = user.IsActive; // Keep the user's selection
+
+            await UserService.CreateUserAsync(user);
+            
+            successMessage = "User created successfully!";
+            
+            // Redirect to users list after a short delay
+            await Task.Delay(1500);
+            Navigation.NavigateTo("/users");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error creating user: {ex.Message}";
+            Console.WriteLine($"Error creating user: {ex.Message}");
+        }
+        finally
+        {
+            isCreating = false;
+        }
+    }
+}

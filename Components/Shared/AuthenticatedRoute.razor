@@ -1,0 +1,34 @@
+@inject AuthenticationStateManager AuthStateManager
+@inject NavigationManager Navigation
+
+@if (!AuthStateManager.IsAuthenticated)
+{
+    <div class="auth-redirect-container">
+        <div class="auth-redirect-card">
+            <div class="auth-redirect-content">
+                <span class="redirect-icon">🔒</span>
+                <h2>Authentication Required</h2>
+                <p>Please sign in to access this page.</p>
+                <button class="auth-redirect-btn" @onclick="NavigateToLogin">
+                    <span class="btn-icon">🔐</span>
+                    Sign In
+                </button>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    @ChildContent
+}
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private void NavigateToLogin()
+    {
+        var returnUrl = Navigation.ToBaseRelativePath(Navigation.Uri);
+        Navigation.NavigateTo($"/auth/login?returnUrl={Uri.EscapeDataString(returnUrl)}", forceLoad: true);
+    }
+}
